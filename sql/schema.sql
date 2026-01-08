@@ -38,62 +38,75 @@ CREATE OR REPLACE VIEW v_seen_trips_latest AS (
              FROM fact_seen_trips_1min)
 );
 
-CREATE OR REPLACE VIEW v_trip_delays AS (
-SELECT
-    minute_recorded,
-    hour_recorded,
-    trip_id,
-    route_id,
-    MAX(delay_seconds) AS delay_seconds
-  FROM fact_delay_events_1min
- GROUP BY minute_recorded, hour_recorded, trip_id, route_id
- );
+CREATE OR REPLACE VIEW v_delays_per_trip_1min AS (
+WITH delayed_trips AS (
+    SELECT
+        minute_recorded,
+        hour_recorded,
+        trip_id,
+        route_id,
+        MAX(delay_seconds) AS delay_seconds
+      FROM fact_delay_events_1min
+     GROUP BY minute_recorded, hour_recorded, trip_id, route_id
+    ),
 
-CREATE OR REPLACE VIEW v_all_trips_1min AS (
-SELECT minute_recorded, hour_recorded, trip_id, route_id, delay_seconds
-  FROM v_trip_delays
+trips_without_delay AS (
+    SELECT minute_recorded,
+           hour_recorded,
+           trip_id,
+           route_id,
+           0 AS delay_seconds
+     FROM fact_seen_trips_1min
+    WHERE is_delayed IS FALSE)
 
-UNION ALL
+    SELECT *
+      FROM delayed_trips
 
-SELECT minute_recorded, hour_recorded, trip_id, route_id, 0 AS delay_seconds
-  FROM fact_seen_trips_1min
- WHERE is_delayed IS FALSE
- );
+    UNION ALL
 
-CREATE OR REPLACE VIEW v_avg_delays_1min AS (
-SELECT minute_recorded, hour_recorded,
-       AVG(delay_seconds) AS avg_delay_per_trip,
-       AVG(delay_seconds) FILTER (WHERE delay_seconds <> 0) AS avg_delay,
-       COUNT(*) AS trips_count
-  FROM v_all_trips_1min
- GROUP BY minute_recorded, hour_recorded
+    SELECT *
+      FROM trips_without_delay
 );
 
-CREATE OR REPLACE VIEW v_avg_delays_1h AS (
-SELECT hour_recorded,
-       AVG(avg_delay_per_trip) AS avg_delay_per_trip,
-       AVG(avg_delay) AS avg_delay,
-       AVG(trips_count) AS trips_count
-  FROM v_avg_delays_1min
- GROUP BY hour_recorded
+CREATE OR REPLACE VIEW v_delays_per_minute AS (
+    SELECT minute_recorded,
+           hour_recorded,
+           COUNT(trip_id) AS trip_count,
+           AVG(delay_seconds) AS avg_delay_per_trip,
+           percentile_cont(0.5) WITHIN GROUP(ORDER BY delay_seconds) AS median_delay_per_trip,
+           AVG(delay_seconds) FILTER(WHERE delay_seconds <> 0) AS avg_delay,
+           percentile_cont(0.5) WITHIN GROUP(ORDER BY delay_seconds) FILTER(WHERE delay_seconds <> 0) AS median_delay
+      FROM v_delays_per_trip_1min
+     GROUP BY minute_recorded, hour_recorded
 );
 
-CREATE OR REPLACE VIEW v_route_delays AS (
-SELECT minute_recorded, route_id, AVG(delay_seconds) AS avg_delay
-  FROM v_all_trips_1min
- GROUP BY minute_recorded, route_id
+CREATE OR REPLACE VIEW v_delays_per_hour AS (
+WITH hourly_avg_trip_count AS (
+    SELECT hour_recorded,
+           AVG(trip_count) AS avg_trip_count
+      FROM v_delays_per_minute
+     GROUP BY hour_recorded
+    )
+
+    SELECT dpt.hour_recorded,
+           hatc.avg_trip_count,
+           AVG(dpt.delay_seconds) AS avg_delay_per_trip,
+           percentile_cont(0.5) WITHIN GROUP(ORDER BY dpt.delay_seconds) AS median_delay_per_trip,
+           AVG(delay_seconds) FILTER(WHERE dpt.delay_seconds <> 0) AS avg_delay,
+           percentile_cont(0.5) WITHIN GROUP(ORDER BY dpt.delay_seconds) FILTER(WHERE dpt.delay_seconds <> 0) AS median_delay
+      FROM v_delays_per_trip_1min dpt
+      JOIN hourly_avg_trip_count hatc
+        ON hatc.hour_recorded = dpt.hour_recorded
+     GROUP BY dpt.hour_recorded, hatc.avg_trip_count
 );
 
-CREATE OR REPLACE VIEW v_route_delays_latest AS (
-SELECT *
-  FROM v_route_delays
- WHERE minute_recorded = (
-       SELECT MAX(minute_recorded)
-         FROM v_route_delays)
-);
-
-CREATE OR REPLACE VIEW v_avg_trip_delays AS (
-SELECT minute_recorded, SUM(delay_seconds)::float / COUNT(*)::float AS avg_delay
-  FROM v_all_trips_1min
- GROUP BY minute_recorded
+CREATE OR REPLACE VIEW v_avg_delay_per_route_latest_top15 AS(
+    SELECT route_id,
+           AVG(delay_seconds) AS avg_delay
+      FROM v_delays_per_trip_1min
+     WHERE minute_recorded = (SELECT MAX(minute_recorded)
+                                FROM v_delays_per_trip_1min)
+     GROUP BY route_id
+     ORDER BY avg_delay DESC
+     LIMIT 15
 );
