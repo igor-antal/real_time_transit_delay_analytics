@@ -1,4 +1,4 @@
-from src.db.db import get_conn
+from db import get_conn
 
 
 def main():

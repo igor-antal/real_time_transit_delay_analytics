@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from src.ingestion.get_gtfs import fetch_gtfs_feed
+from .get_gtfs import fetch_gtfs_feed
 from src.db.db import get_conn
 
 

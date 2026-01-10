@@ -101,6 +101,7 @@ WITH hourly_avg_trip_count AS (
 );
 
 CREATE OR REPLACE VIEW v_avg_delay_per_route_latest_top15 AS(
+WITH route_delays AS(
     SELECT route_id,
            AVG(delay_seconds) AS avg_delay
       FROM v_delays_per_trip_1min
@@ -109,4 +110,10 @@ CREATE OR REPLACE VIEW v_avg_delay_per_route_latest_top15 AS(
      GROUP BY route_id
      ORDER BY avg_delay DESC
      LIMIT 15
+    )
+
+    SELECT dr.long_name, rd.avg_delay
+      FROM route_delays rd
+      JOIN dim_routes dr
+        ON rd.route_id = dr.route_id
 );
