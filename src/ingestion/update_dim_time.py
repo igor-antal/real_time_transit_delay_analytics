@@ -11,10 +11,15 @@ SELECT ts, DATE_TRUNC('hour', ts)
 ) ts;
 """
 
-conn = get_conn()
-with conn:
-    with conn.cursor() as cur:
-        cur.execute("TRUNCATE dim_time;")
-        cur.execute(TIME_INSERT_SQL)
-        print("DIM TIME updated.")
 
+def main():
+    conn = get_conn()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("TRUNCATE dim_time;")
+            cur.execute(TIME_INSERT_SQL)
+            print("DIM TIME updated.")
+
+
+if __name__ == "__main__":
+    main()
