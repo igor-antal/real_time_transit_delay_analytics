@@ -82,5 +82,5 @@ CREATE OR REPLACE VIEW v_pct_delayed_trips AS(
 
 CREATE OR REPLACE VIEW v_ongoing_trips_count AS(
     SELECT COUNT(*)
-      FROM fact_trip_delay_1min
+      FROM v_trips_latest
 );
