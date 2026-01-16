@@ -89,7 +89,6 @@ def get_trip_updates() -> None:
                 DELETE_OLD_RECORDS_SQL,
                 (day_ago,))
 
-    conn.close()
     print(f"Trips / Delays updated: {now}")
 
 

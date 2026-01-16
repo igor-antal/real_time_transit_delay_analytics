@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS dim_routes (
     short_name TEXT
 );
 
+CREATE TABLE IF NOT EXISTS dim_time (
+    time_key TIMESTAMP PRIMARY KEY,
+    hour TIMESTAMP NOT NULL
+);
+
 CREATE OR REPLACE VIEW v_trips_latest AS (
     SELECT *
       FROM fact_trip_delay_1min
