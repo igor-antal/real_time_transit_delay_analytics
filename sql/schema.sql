@@ -123,8 +123,8 @@ WITH latest_delayed_trips_top15 AS (
            vp.longitude,
            vp.bearing
       FROM latest_delayed_trips_top15 dt
-      LEFT JOIN dim_routes dr
+      JOIN dim_routes dr
         ON dr.route_id = dt.route_id
-      LEFT JOIN fact_vehicles_pos vp
+      JOIN fact_vehicles_pos vp
         ON vp.trip_id = dt.trip_id
 );
