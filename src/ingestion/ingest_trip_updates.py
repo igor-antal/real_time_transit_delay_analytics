@@ -72,7 +72,7 @@ def get_trip_updates() -> None:
                     delay = extract_delay(stu)
                     if delay is None or delay < MIN_DELAY_IN_SECONDS:
                         continue
-                    max_delay = max(max_delay, delay) if max_delay < MAX_VALID_DELAY_SECONDS else 0
+                    max_delay = max(max_delay, delay) if max(max_delay, delay) < MAX_VALID_DELAY_SECONDS else 0
 
                 is_delayed = max_delay > 0
 
