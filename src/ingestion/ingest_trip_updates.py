@@ -9,7 +9,7 @@ TRIP_UPDATES_URL = r"https://api.golemio.cz/v2/vehiclepositions/gtfsrt/trip_upda
 MIN_DELAY_IN_SECONDS = 60
 
 # delay above this val will be counted as 0
-MAX_VALID_DELAY_SECONDS = 3600
+MAX_VALID_DELAY_SECONDS = 10000
 
 UPSERT_DELAYS_SQL = """
 INSERT INTO fact_trip_delay_1min (
