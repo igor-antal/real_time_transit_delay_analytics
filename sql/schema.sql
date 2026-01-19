@@ -11,6 +11,14 @@ CREATE TABLE IF NOT EXISTS fact_trip_delay_1min (
 CREATE INDEX IF NOT EXISTS idx_delay_route_minute
 ON fact_trip_delay_1min (route_id, minute_recorded);
 
+CREATE TABLE IF NOT EXISTS fact_vehicles_pos (
+    trip_id TEXT PRIMARY KEY,
+    route_id TEXT NOT NULL,
+    latitude DECIMAL NOT NULL,
+    longitude DECIMAL NOT NULL,
+    bearing INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS dim_routes (
     route_id TEXT PRIMARY KEY,
     long_name TEXT,
@@ -89,4 +97,34 @@ CREATE OR REPLACE VIEW v_pct_delayed_trips AS(
 CREATE OR REPLACE VIEW v_ongoing_trips_count AS(
     SELECT COUNT(*)
       FROM v_trips_latest
+);
+
+CREATE OR REPLACE VIEW v_delay_per_trip_latest_top15 AS (
+WITH latest_delayed_trips_top15 AS (
+    SELECT trip_id,
+           route_id,
+           delay_seconds
+      FROM fact_trip_delay_1min
+     WHERE minute_recorded = (SELECT MAX(minute_recorded)
+                                FROM fact_trip_delay_1min)
+     AND is_delayed IS TRUE
+     ORDER BY delay_seconds DESC
+     LIMIT 15
+)
+
+    SELECT dt.trip_id,
+           dt.route_id,
+           dt.delay_seconds,
+           dr.route_type,
+           dr.long_name,
+           dr.short_name,
+           dr.route_type || ' ' || dr.short_name || ': (' || dt.trip_id || ')' AS trip_label,
+           vp.latitude,
+           vp.longitude,
+           vp.bearing
+      FROM latest_delayed_trips_top15 dt
+      LEFT JOIN dim_routes dr
+        ON dr.route_id = dt.route_id
+      LEFT JOIN fact_vehicles_pos vp
+        ON vp.trip_id = dt.trip_id
 );
