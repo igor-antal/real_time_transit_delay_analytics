@@ -14,7 +14,8 @@ ON fact_trip_delay_1min (route_id, minute_recorded);
 CREATE TABLE IF NOT EXISTS dim_routes (
     route_id TEXT PRIMARY KEY,
     long_name TEXT,
-    short_name TEXT
+    short_name TEXT,
+    route_type TEXT
 );
 
 CREATE TABLE IF NOT EXISTS dim_time (
@@ -74,7 +75,7 @@ WITH route_delays AS(
      LIMIT 15
     )
 
-    SELECT dr.long_name, rd.avg_delay
+    SELECT dr.long_name, rd.avg_delay, dr.route_type
       FROM route_delays rd
       JOIN dim_routes dr
         ON rd.route_id = dr.route_id
