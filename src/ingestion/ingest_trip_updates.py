@@ -8,6 +8,9 @@ TRIP_UPDATES_URL = r"https://api.golemio.cz/v2/vehiclepositions/gtfsrt/trip_upda
 # delay shorter than this value won't be recorded:
 MIN_DELAY_IN_SECONDS = 60
 
+# delay above this val will be counted as 0
+MAX_VALID_DELAY_SECONDS = 3600
+
 UPSERT_DELAYS_SQL = """
 INSERT INTO fact_trip_delay_1min (
     minute_recorded,
@@ -69,7 +72,7 @@ def get_trip_updates() -> None:
                     delay = extract_delay(stu)
                     if delay is None or delay < MIN_DELAY_IN_SECONDS:
                         continue
-                    max_delay = max(max_delay, delay)
+                    max_delay = max(max_delay, delay) if max_delay < MAX_VALID_DELAY_SECONDS else 0
 
                 is_delayed = max_delay > 0
 

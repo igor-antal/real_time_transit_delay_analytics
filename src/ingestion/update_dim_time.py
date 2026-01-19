@@ -12,7 +12,7 @@ SELECT ts, DATE_TRUNC('hour', ts)
 """
 
 
-def main():
+def update_dim_time() -> None:
     conn = get_conn()
     with conn:
         with conn.cursor() as cur:
@@ -22,4 +22,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    update_dim_time()

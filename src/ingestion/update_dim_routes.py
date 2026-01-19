@@ -19,7 +19,7 @@ VALUES (%s, %s, %s, %s);
 """
 
 
-def main():
+def update_dim_routes() -> None:
     conn = get_conn()
     with conn:
         with conn.cursor() as cur:
@@ -47,4 +47,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    update_dim_routes()

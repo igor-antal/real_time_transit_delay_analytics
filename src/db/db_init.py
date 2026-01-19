@@ -1,7 +1,7 @@
 from db import get_conn
 
 
-def main():
+def main() -> None:
     conn = get_conn()
     with conn:
         with conn.cursor() as cur:
