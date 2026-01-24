@@ -2,8 +2,12 @@ from src.db.db import get_conn
 
 TIME_INSERT_SQL = """
 INSERT INTO dim_time
-SELECT ts, DATE_TRUNC('hour', ts)
-
+SELECT ts, 
+       DATE_TRUNC('hour', ts),
+       EXTRACT(minute FROM ts),
+       EXTRACT(hour FROM ts)::text || ':00',
+       EXTRACT(day FROM ts)::text || '.' || ' ' || EXTRACT(month FROM ts)::text || '.'
+       
   FROM GENERATE_SERIES(
        DATE_TRUNC('day', CURRENT_DATE - 1),
        DATE_TRUNC('day', CURRENT_DATE + 2) - interval '1 minute',

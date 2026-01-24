@@ -28,7 +28,10 @@ CREATE TABLE IF NOT EXISTS dim_routes (
 
 CREATE TABLE IF NOT EXISTS dim_time (
     time_key TIMESTAMP PRIMARY KEY,
-    hour TIMESTAMP NOT NULL
+    hour TIMESTAMP NOT NULL,
+    minute_label INT NOT NULL,
+    hour_label TEXT NOT NULL,
+    date_label TEXT NOT NULL
 );
 
 CREATE OR REPLACE VIEW v_trips_latest AS (
