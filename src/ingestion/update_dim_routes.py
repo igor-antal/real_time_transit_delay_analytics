@@ -1,12 +1,23 @@
 import requests
 from api_key import API_KEY
 from src.db.db import get_conn
-from datetime import datetime
+from logger import logger
 import json
 
 STOPS_URL = r"https://api.golemio.cz//v2/gtfs/routes"
 headers = {"X-Access-Token": API_KEY}
-response = requests.get(STOPS_URL, headers=headers).json()
+
+try:
+    response = requests.get(STOPS_URL, headers=headers)
+    response.raise_for_status()
+except requests.exceptions.ConnectionError as error:
+    logger.exception()
+    raise
+except requests.exceptions.HTTPError as error:
+    logger.exception()
+    raise
+
+response = response.json()
 
 INSERT_SQL = """
 INSERT INTO dim_routes (
@@ -43,7 +54,7 @@ def update_dim_routes() -> None:
                         )
                     )
     conn.close()
-    print(f"Routes updated: {datetime.now()}")
+    logger.info("Dim routes updated")
 
 
 if __name__ == "__main__":

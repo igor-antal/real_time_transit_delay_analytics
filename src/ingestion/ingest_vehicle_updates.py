@@ -1,6 +1,6 @@
 from src.db.db import get_conn
 from .get_gtfs import fetch_gtfs_feed
-from datetime import datetime
+from .logger import logger
 
 VEHICLES_URL = r"https://api.golemio.cz//v2/vehiclepositions/gtfsrt/vehicle_positions.pb"
 INSERT_SQL = """
@@ -47,7 +47,7 @@ def get_vehicle_updates() -> None:
                         bearing
                     )
                 )
-    print(f"Vehicles updated: {datetime.now()}")
+    logger.info("Vehicles updated")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from .get_gtfs import fetch_gtfs_feed
 from src.db.db import get_conn
+from .logger import logger
 
 
 TRIP_UPDATES_URL = r"https://api.golemio.cz/v2/vehiclepositions/gtfsrt/trip_updates.pb"
@@ -92,7 +93,7 @@ def get_trip_updates() -> None:
                 DELETE_OLD_RECORDS_SQL,
                 (day_ago,))
 
-    print(f"Trips / Delays updated: {now}")
+    logger.info("Trips / Delays updated")
 
 
 if __name__ == "__main__":
