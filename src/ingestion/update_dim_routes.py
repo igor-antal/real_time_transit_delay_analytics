@@ -4,7 +4,7 @@ from src.db.db import get_conn
 from logger import logger
 import json
 
-STOPS_URL = r"https://api.golemio.cz//v2/gtfs/routes"
+ROUTES_URL = r"https://api.golemio.cz//v2/gtfs/routes"
 headers = {"X-Access-Token": API_KEY}
 
 try:
