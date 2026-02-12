@@ -8,7 +8,7 @@ ROUTES_URL = r"https://api.golemio.cz//v2/gtfs/routes"
 headers = {"X-Access-Token": API_KEY}
 
 try:
-    response = requests.get(STOPS_URL, headers=headers)
+    response = requests.get(ROUTES_URL, headers=headers)
     response.raise_for_status()
 except requests.exceptions.ConnectionError as error:
     logger.exception()
