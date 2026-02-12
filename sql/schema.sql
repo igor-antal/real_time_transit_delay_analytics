@@ -26,14 +26,6 @@ CREATE TABLE IF NOT EXISTS dim_routes (
     route_type TEXT
 );
 
-CREATE TABLE IF NOT EXISTS dim_time_minute (
-    time_key TIMESTAMP PRIMARY KEY
-);
-
-CREATE TABLE IF NOT EXISTS dim_time_hour (
-    time_key TIMESTAMP PRIMARY KEY
-);
-
 CREATE OR REPLACE VIEW v_trips_latest AS (
     SELECT *
       FROM fact_trip_delay_1min
