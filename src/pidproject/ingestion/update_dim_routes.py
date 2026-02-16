@@ -1,7 +1,7 @@
 import requests
-from api_key import API_KEY
-from src.db.db import get_conn
-from logger import logger
+from pidproject.ingestion.api_key import API_KEY
+from pidproject.db.db import get_conn
+from pidproject.ingestion.logger import logger
 import json
 
 ROUTES_URL = r"https://api.golemio.cz//v2/gtfs/routes"

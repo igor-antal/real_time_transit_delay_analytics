@@ -1,7 +1,7 @@
 import requests
 from google.transit import gtfs_realtime_pb2
-from api_key import API_KEY
-from .logger import logger
+from pidproject.ingestion.api_key import API_KEY
+from pidproject.ingestion.logger import logger
 
 
 def fetch_gtfs_feed(url: str) -> bytes:

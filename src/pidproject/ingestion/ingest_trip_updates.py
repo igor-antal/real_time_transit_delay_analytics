@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from .get_gtfs import fetch_gtfs_feed
-from src.db.db import get_conn
-from .logger import logger
+from pidproject.ingestion.get_gtfs import fetch_gtfs_feed
+from pidproject.db.db import get_conn
+from pidproject.ingestion.logger import logger
 
 
 TRIP_UPDATES_URL = r"https://api.golemio.cz/v2/vehiclepositions/gtfsrt/trip_updates.pb"

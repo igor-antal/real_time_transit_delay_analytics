@@ -1,6 +1,6 @@
-from src.db.db import get_conn
-from .get_gtfs import fetch_gtfs_feed
-from .logger import logger
+from pidproject.db.db import get_conn
+from pidproject.ingestion.get_gtfs import fetch_gtfs_feed
+from pidproject.ingestion.logger import logger
 
 VEHICLES_URL = r"https://api.golemio.cz//v2/vehiclepositions/gtfsrt/vehicle_positions.pb"
 INSERT_SQL = """
