@@ -89,6 +89,16 @@ CREATE OR REPLACE VIEW v_pct_delayed_trips AS(
       FROM fact_trip_delay_1min
 );
 
+CREATE OR REPLACE VIEW v_delay_by_route_type_latest AS(
+    SELECT dim.route_type, SUM(fact.delay_seconds)
+     FROM fact_trip_delay_1min fact
+     JOIN dim_routes dim
+       ON dim.route_id = fact.route_id
+    WHERE fact.minute_recorded = (SELECT MAX(minute_recorded)
+                                    FROM fact_trip_delay_1min)
+    GROUP BY dim.route_type
+);
+
 CREATE OR REPLACE VIEW v_ongoing_trips_count AS(
     SELECT COUNT(*)
       FROM v_trips_latest
