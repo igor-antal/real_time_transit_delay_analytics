@@ -15,13 +15,12 @@ MAX_VALID_DELAY_SECONDS = 10000
 UPSERT_DELAYS_SQL = """
 INSERT INTO fact_trip_delay_1min (
     minute_recorded,
-    hour_recorded,
     trip_id,
     route_id,
     delay_seconds,
     is_delayed
 )
-VALUES (%s, %s, %s, %s, %s, %s)
+VALUES (%s, %s, %s, %s, %s)
 ON CONFLICT (trip_id, minute_recorded)
 DO UPDATE SET
     delay_seconds = GREATEST(
@@ -55,9 +54,8 @@ def get_trip_updates() -> None:
     with conn:
         with conn.cursor() as cur:
             now = datetime.now()
-            day_ago = now - timedelta(hours=24)
+            hour_ago = now - timedelta(hours=1)
             minute_recorded = now.replace(second=0, microsecond=0)
-            hour_recorded = minute_recorded.replace(minute=0)
 
             for entity in feed.entity:
                 if not entity.HasField("trip_update"):
@@ -81,7 +79,6 @@ def get_trip_updates() -> None:
                     UPSERT_DELAYS_SQL,
                     (
                         minute_recorded,
-                        hour_recorded,
                         trip_id,
                         route_id,
                         max_delay,
@@ -91,7 +88,7 @@ def get_trip_updates() -> None:
 
             cur.execute(
                 DELETE_OLD_RECORDS_SQL,
-                (day_ago,))
+                (hour_ago,))
 
     logger.info("Trips / Delays updated")
 
