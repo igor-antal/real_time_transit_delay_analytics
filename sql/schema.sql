@@ -59,10 +59,8 @@ WITH route_delays AS(
      ORDER BY avg_delay DESC
     )
 
-    SELECT dr.long_name, rd.avg_delay, dr.route_type
+    SELECT rd.route_id, rd.avg_delay
       FROM route_delays rd
-      JOIN dim_routes dr
-        ON rd.route_id = dr.route_id
 );
 
 CREATE OR REPLACE VIEW v_delay_per_route_type_latest AS(
@@ -84,15 +82,10 @@ WITH latest_delayed_trips_top15 AS (
     SELECT dt.trip_id,
            dt.route_id,
            dt.delay_seconds,
-           dr.route_type,
-           dr.long_name,
-           dr.short_name,
            vp.latitude,
            vp.longitude,
            vp.bearing
       FROM latest_delayed_trips_top15 dt
-      JOIN dim_routes dr
-        ON dr.route_id = dt.route_id
       JOIN fact_vehicles_pos vp
         ON vp.trip_id = dt.trip_id
 );
