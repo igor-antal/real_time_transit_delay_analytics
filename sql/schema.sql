@@ -29,8 +29,10 @@ CREATE TABLE IF NOT EXISTS dim_routes (
 );
 
 CREATE OR REPLACE VIEW v_trips_latest AS (
-    SELECT *
-      FROM fact_trip_delay_1min
+    SELECT fact.*, dr.route_type
+      FROM fact_trip_delay_1min fact
+      JOIN dim_routes dr
+        ON fact.route_id = dr.route_id
      WHERE minute_recorded = (
            SELECT MAX(minute_recorded)
              FROM fact_trip_delay_1min)
@@ -65,11 +67,9 @@ WITH route_delays AS(
 );
 
 CREATE OR REPLACE VIEW v_delay_by_route_type_latest AS(
-    SELECT dim.route_type, AVG(fact.delay_seconds)
+    SELECT route_type, AVG(delay_seconds)
      FROM v_trips_latest fact
-     JOIN dim_routes dim
-       ON dim.route_id = fact.route_id
-    GROUP BY dim.route_type
+    GROUP BY route_type
 );
 
 CREATE OR REPLACE VIEW v_delay_per_trip_latest_top15 AS (
