@@ -48,16 +48,14 @@ CREATE OR REPLACE VIEW v_delays_per_minute AS (
 );
 
 
-CREATE OR REPLACE VIEW v_avg_delay_per_route_latest_top15 AS(
+CREATE OR REPLACE VIEW v_avg_delay_per_route_latest_top5 AS(
 WITH route_delays AS(
     SELECT route_id,
            AVG(delay_seconds) AS avg_delay
-      FROM fact_trip_delay_1min
-     WHERE minute_recorded = (SELECT MAX(minute_recorded)
-                                FROM fact_trip_delay_1min)
+      FROM v_trips_latest
      GROUP BY route_id
      ORDER BY avg_delay DESC
-     LIMIT 15
+     LIMIT 5
     )
 
     SELECT dr.long_name, rd.avg_delay, dr.route_type
@@ -68,11 +66,9 @@ WITH route_delays AS(
 
 CREATE OR REPLACE VIEW v_delay_by_route_type_latest AS(
     SELECT dim.route_type, AVG(fact.delay_seconds)
-     FROM fact_trip_delay_1min fact
+     FROM v_trips_latest fact
      JOIN dim_routes dim
        ON dim.route_id = fact.route_id
-    WHERE fact.minute_recorded = (SELECT MAX(minute_recorded)
-                                    FROM fact_trip_delay_1min)
     GROUP BY dim.route_type
 );
 
@@ -81,10 +77,8 @@ WITH latest_delayed_trips_top15 AS (
     SELECT trip_id,
            route_id,
            delay_seconds
-      FROM fact_trip_delay_1min
-     WHERE minute_recorded = (SELECT MAX(minute_recorded)
-                                FROM fact_trip_delay_1min)
-     AND is_delayed IS TRUE
+      FROM v_trips_latest
+     WHERE is_delayed IS TRUE
      ORDER BY delay_seconds DESC
      LIMIT 15
 )
