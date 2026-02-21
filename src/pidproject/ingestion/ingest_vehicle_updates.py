@@ -23,7 +23,6 @@ DO UPDATE SET
 
 
 def get_vehicle_updates() -> None:
-
     feed = fetch_gtfs_feed(VEHICLES_URL)
     with get_conn() as conn:
         with conn.cursor() as cur:

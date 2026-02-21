@@ -4,7 +4,7 @@ from pidproject.ingestion.api_key import API_KEY
 from pidproject.ingestion.logger import logger
 
 
-def fetch_gtfs_feed(url: str) -> bytes:
+def fetch_gtfs_feed(url: str) -> gtfs_realtime_pb2.FeedMessage:
     headers = {"X-Access-Token": API_KEY}
     try:
         response = requests.get(url, headers=headers)
