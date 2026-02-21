@@ -51,26 +51,25 @@ CREATE OR REPLACE VIEW v_delays_per_minute AS (
 
 
 CREATE OR REPLACE VIEW v_avg_delay_per_route_latest AS(
-WITH route_delays AS(
-    SELECT route_id,
-           AVG(delay_seconds) AS avg_delay
-      FROM v_trips_latest
-     GROUP BY route_id
-     ORDER BY avg_delay DESC
-    )
-
-    SELECT rd.route_id, rd.avg_delay
-      FROM route_delays rd
+    SELECT
+        route_id,
+        AVG(delay_seconds) AS avg_delay,
+        COUNT(*) AS trip_count
+    FROM v_trips_latest
+    GROUP BY route_id
 );
 
-CREATE OR REPLACE VIEW v_delay_per_route_type_latest AS(
-    SELECT route_type, AVG(delay_seconds)
-     FROM v_trips_latest fact
+CREATE OR REPLACE VIEW v_delay_per_route_type_latest AS (
+    SELECT
+        route_type,
+        AVG(delay_seconds) AS avg_delay,
+        COUNT(*) AS trip_count
+    FROM v_trips_latest
     GROUP BY route_type
 );
 
 CREATE OR REPLACE VIEW v_delay_per_trip_latest AS (
-WITH latest_delayed_trips_top15 AS (
+WITH latest_delayed_trips AS (
     SELECT trip_id,
            route_id,
            delay_seconds
@@ -85,7 +84,7 @@ WITH latest_delayed_trips_top15 AS (
            vp.latitude,
            vp.longitude,
            vp.bearing
-      FROM latest_delayed_trips_top15 dt
+      FROM latest_delayed_trips dt
       JOIN fact_vehicles_pos vp
         ON vp.trip_id = dt.trip_id
 );
