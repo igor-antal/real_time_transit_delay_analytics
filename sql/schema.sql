@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS fact_trip_delay_1min (
     minute_recorded TIMESTAMP NOT NULL,
-    hour_recorded TIMESTAMP NOT NULL,
     trip_id TEXT NOT NULL,
     route_id TEXT NOT NULL,
     delay_seconds INT NOT NULL,
@@ -10,6 +9,9 @@ CREATE TABLE IF NOT EXISTS fact_trip_delay_1min (
 
 CREATE INDEX IF NOT EXISTS idx_delay_route_minute
 ON fact_trip_delay_1min (route_id, minute_recorded);
+
+CREATE INDEX IF NOT EXISTS idx_minute_desc
+ON fact_trip_delay_1min (minute_recorded DESC);
 
 CREATE TABLE IF NOT EXISTS fact_vehicles_pos (
     trip_id TEXT PRIMARY KEY,
@@ -36,35 +38,15 @@ CREATE OR REPLACE VIEW v_trips_latest AS (
 
 CREATE OR REPLACE VIEW v_delays_per_minute AS (
     SELECT minute_recorded,
-           hour_recorded,
            COUNT(trip_id) AS trip_count,
            AVG(delay_seconds) AS avg_delay_per_trip,
            percentile_cont(0.5) WITHIN GROUP(ORDER BY delay_seconds) AS median_delay_per_trip,
            AVG(delay_seconds) FILTER(WHERE delay_seconds <> 0) AS avg_delay,
            percentile_cont(0.5) WITHIN GROUP(ORDER BY delay_seconds) FILTER(WHERE delay_seconds <> 0) AS median_delay
       FROM fact_trip_delay_1min
-     GROUP BY minute_recorded, hour_recorded
+     GROUP BY minute_recorded
 );
 
-CREATE OR REPLACE VIEW v_delays_per_hour AS (
-WITH hourly_avg_trip_count AS (
-    SELECT hour_recorded,
-           AVG(trip_count) AS avg_trip_count
-      FROM v_delays_per_minute
-     GROUP BY hour_recorded
-    )
-
-    SELECT td.hour_recorded,
-           hatc.avg_trip_count,
-           AVG(td.delay_seconds) AS avg_delay_per_trip,
-           percentile_cont(0.5) WITHIN GROUP(ORDER BY td.delay_seconds) AS median_delay_per_trip,
-           AVG(td.delay_seconds) FILTER(WHERE td.delay_seconds <> 0) AS avg_delay,
-           percentile_cont(0.5) WITHIN GROUP(ORDER BY td.delay_seconds) FILTER(WHERE td.delay_seconds <> 0) AS median_delay
-      FROM fact_trip_delay_1min td
-      JOIN hourly_avg_trip_count hatc
-        ON hatc.hour_recorded = td.hour_recorded
-     GROUP BY td.hour_recorded, hatc.avg_trip_count
-);
 
 CREATE OR REPLACE VIEW v_avg_delay_per_route_latest_top15 AS(
 WITH route_delays AS(
@@ -84,24 +66,14 @@ WITH route_delays AS(
         ON rd.route_id = dr.route_id
 );
 
-CREATE OR REPLACE VIEW v_pct_delayed_trips AS(
-    SELECT COUNT(*) FILTER(WHERE is_delayed = TRUE)::numeric / COUNT(*) AS pct_delayed
-      FROM fact_trip_delay_1min
-);
-
 CREATE OR REPLACE VIEW v_delay_by_route_type_latest AS(
-    SELECT dim.route_type, SUM(fact.delay_seconds)
+    SELECT dim.route_type, AVG(fact.delay_seconds)
      FROM fact_trip_delay_1min fact
      JOIN dim_routes dim
        ON dim.route_id = fact.route_id
     WHERE fact.minute_recorded = (SELECT MAX(minute_recorded)
                                     FROM fact_trip_delay_1min)
     GROUP BY dim.route_type
-);
-
-CREATE OR REPLACE VIEW v_ongoing_trips_count AS(
-    SELECT COUNT(*)
-      FROM v_trips_latest
 );
 
 CREATE OR REPLACE VIEW v_delay_per_trip_latest_top15 AS (
@@ -123,7 +95,6 @@ WITH latest_delayed_trips_top15 AS (
            dr.route_type,
            dr.long_name,
            dr.short_name,
-           dr.route_type || ' ' || dr.short_name || ': (' || dt.trip_id || ')' AS trip_label,
            vp.latitude,
            vp.longitude,
            vp.bearing
