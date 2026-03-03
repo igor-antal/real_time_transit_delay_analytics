@@ -59,7 +59,7 @@ CREATE OR REPLACE VIEW v_avg_delay_per_route_latest AS(
     GROUP BY route_id
 );
 
-CREATE OR REPLACE VIEW v_delay_per_route_type_latest AS (
+CREATE OR REPLACE VIEW v_avg_delay_per_route_type_latest AS (
     SELECT
         route_type,
         AVG(delay_seconds) AS avg_delay,
