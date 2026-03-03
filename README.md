@@ -68,7 +68,7 @@ Power BI works over SQL views:
 - **v_trips_latest** – latest snapshot of all trips + `dim_routes` JOINed
 - **v_delays_per_minute** – minute-level aggregations: count, average, median, non-zero median  
 - **v_avg_delay_per_route_latest** – average delay per route and trip count
-- **v_avg_delay_per_route_type_latest** – average delay per route type 
+- **v_avg_delay_per_route_type_latest** – average delay per route type and trip count
 - **v_delay_per_trip_latest** – delayed trips + vehicle GPS  
  
 
@@ -89,7 +89,49 @@ Power BI works over SQL views:
 
 ### Dim Routes Update
 
-- Fetch route metadata from API  
-- TRUNCATE + INSERT  
+- Fetch route info  
+- TRUNCATE + INSERT
+I run this one manualy  
 
-rest is still WIP
+## Power BI Report (DirectQuery)
+
+- Aggregations split between SQL and DAX:
+
+| Calculation type | Layer |
+|-----------------|-------|
+| Median, minute-level aggregates | SQL |
+| Count of trips, % delayed trips, Weighted averages | DAX |
+
+Bar visuals must use weighted average so that drill through doesn`t calculate average out of averages. 
+This is handled using DAX for example: 
+``` avg delay weighted per route type =
+DIVIDE(
+    SUMX(v_avg_delay_per_route_type_latest,
+        v_avg_delay_per_route_type_latest[avg_delay] *
+        v_avg_delay_per_route_type_latest[trip_count]),
+    SUM(v_avg_delay_per_route_type_latest[trip_count])
+)
+```
+
+### Page 1 – Overview
+
+![Page 1 ](images/PBI_Page_1.jpg)
+
+Drill through:
+![Page 1 Drill through](images/PBI_Page_1_Drill.jpg)
+
+
+- KPI cards: active trips count, % delayed trips, average delay, max delay
+- Bar charts: average delay per transport type & per route (drill-through affects KPI cards)  
+- Line chart: last 60 minutes – avg delay, avg delay per trip, median of delay, trip count  
+
+### Page 2 – Delayed trips and their location
+
+![Page 2](images/PBI_Page_2.jpg)
+
+Drill through:
+![Page 2 Drill through](images/PBI_Page_2_Drill.jpg)
+
+### Model View
+
+![Model](images/PBI_Model_View.jpg)
