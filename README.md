@@ -91,7 +91,9 @@ Power BI works over SQL views:
 
 - Fetch route info  
 - TRUNCATE + INSERT
-I run this one manualy  
+
+  
+  This update is run manually since routes don't change as often.
 
 ## Power BI Report (DirectQuery)
 
