@@ -1,4 +1,4 @@
-# 🚍 Realtime Public Transport Delay Monitoring  
+# 🚍 Real-time Public Transport Delay Monitoring  
 
 **GTFS-RT → Python → PostgreSQL → Power BI (DirectQuery)**  
 
@@ -6,8 +6,7 @@ End-to-end near-real-time data engineering project that ingests live Prague publ
 
 ## Features
 
-- Realtime ingestion pipeline processing ~3,500 live vehicle/trip updates every minute. 
-- Near-real-time ingestion (60 s refresh)
+- Real-time ingestion pipeline processing ~3,500 live vehicle/trip updates every minute. 
 - Rolling 60-minute historical storage
 - Star-schema inspired data model
 - Power BI DirectQuery dashboard
@@ -70,7 +69,7 @@ The reporting model combines SQL views with selected fact and dimension tables.
 
 SQL views provide pre-aggregated datasets for DirectQuery performance:
 
-- **v_trips_latest** – latest snapshot of all trips + `dim_routes` JOINed
+- **v_trips_latest** – latest snapshot of all trips + `dim_routes` joined
 - **v_delays_per_minute** – minute-level aggregations: count, average, median, non-zero median  
 - **v_avg_delay_per_route_latest** – average delay per route and trip count
 - **v_avg_delay_per_route_type_latest** – average delay per route type and trip count
@@ -110,7 +109,7 @@ SQL views provide pre-aggregated datasets for DirectQuery performance:
 | Count of trips, % delayed trips, Weighted averages | DAX |
 
 Bar visuals must use weighted average so that drill through doesn`t calculate average out of averages. 
-This is handled using DAX for example: 
+Example DAX measure:
 ``` avg delay weighted per route type =
 DIVIDE(
     SUMX(v_avg_delay_per_route_type_latest,
