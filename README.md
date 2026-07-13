@@ -2,21 +2,24 @@
 
 **GTFS-RT → Python → PostgreSQL → Power BI (DirectQuery)**  
 
-End-to-end near-realtime data engineering project using Prague public transport (PID) data.  
+End-to-end near-real-time data engineering project that ingests live Prague public transport (PID) data, stores rolling historical snapshots in PostgreSQL, and serves Power BI dashboards via DirectQuery.
 
-It demonstrates:
+## Features
 
-- Realtime ingestion pipeline  
-- Optimized relational model (fact + dimension tables)  
-- SQL analytical layer for reporting  
-- Power BI dashboard running on DirectQuery
+- Realtime ingestion pipeline processing ~3,500 live vehicle/trip updates every minute. 
+- Near-real-time ingestion (60 s refresh)
+- Rolling 60-minute historical storage
+- Star-schema inspired data model
+- Power BI DirectQuery dashboard
+- Drill-through analysis
+- Live vehicle map
 
 ## Data Flow
 
 1. GTFS-RT feed (Trip Updates + Vehicle Positions)  
 2. Python ingestion layer  
 3. PostgreSQL (facts + dimensions + analytical views)  
-4. Power BI (DirectQuery) - updates every minute
+4. Power BI (DirectQuery)
 
 Ingestion is triggered every minute by Windows Task Scheduler running .bat script.
 
@@ -63,7 +66,9 @@ Ingestion is triggered every minute by Windows Task Scheduler running .bat scrip
 
 ## SQL Analytical Layer (Views)
 
-Power BI works over SQL views:
+The reporting model combines SQL views with selected fact and dimension tables.
+
+SQL views provide pre-aggregated datasets for DirectQuery performance:
 
 - **v_trips_latest** – latest snapshot of all trips + `dim_routes` JOINed
 - **v_delays_per_minute** – minute-level aggregations: count, average, median, non-zero median  
@@ -79,7 +84,7 @@ Power BI works over SQL views:
 - Feed: `trip_updates.pb`  
 - Extract max delay per trip  
 - Ignore delays < 60s  
-- Clamp extreme delays (> 10000s)  
+- Cap extreme delays (> 10000s)  
 - UPSERT to `fact_trip_delay_1min`  
 
 ### Vehicle Positions
@@ -97,7 +102,7 @@ Power BI works over SQL views:
 
 ## Power BI Report (DirectQuery)
 
-- Aggregations split between SQL and DAX:
+- Aggregations are split between SQL and DAX:
 
 | Calculation type | Layer |
 |-----------------|-------|
